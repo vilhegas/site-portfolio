@@ -52,12 +52,23 @@ const Portfolio = () => {
   }, []);
 
   const scrollToSection = (id: string): void => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setActiveSection(id);
-      setIsMenuOpen(false);
-    }
+    setIsMenuOpen(false);
+
+      requestAnimationFrame(() => {
+        const element = document.getElementById(id);
+        if (!element) return;
+
+        const headerOffset = 96; // ajuste: 80~110 dependendo da altura do seu header
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+
+        setActiveSection(id);
+    });
   };
 
   return (
@@ -121,7 +132,7 @@ const Portfolio = () => {
                 {['home', 'skills', 'projetos', 'contato'].map((item) => (
                   <button
                     key={item}
-                    onClick={() => scrollToSection(item)}
+                    onClick={() => {scrollToSection(item); setIsMenuOpen(false);}}
                     className="block w-full text-left capitalize text-slate-300 hover:text-cyan-400 py-2"
                   >
                     {item}
