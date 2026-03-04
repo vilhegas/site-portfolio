@@ -118,7 +118,7 @@ const Portfolio = () => {
               className="md:hidden bg-slate-900 border-b border-slate-800"
             >
               <div className="px-4 py-4 space-y-3">
-                {['home', 'sobre', 'skills', 'experiencia', 'projetos', 'contato'].map((item) => (
+                {['home', 'skills', 'projetos', 'contato'].map((item) => (
                   <button
                     key={item}
                     onClick={() => scrollToSection(item)}
