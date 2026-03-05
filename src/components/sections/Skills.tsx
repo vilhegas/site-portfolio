@@ -13,6 +13,7 @@ import {
   Shield,
   Activity
 } from 'lucide-react';
+import { Particles } from '../ui/Particles';
 
 const skills = [
   { name: 'HTML/CSS', icon: Globe, level: 95, category: 'FRONTEND' },
@@ -33,16 +34,17 @@ const getTier = (level: number) => {
 
 export default function Skills() {
   return (
-    <section className="relative min-h-screen bg-[#000] overflow-hidden scroll-mt-24" id="skills">
+    <section className="relative min-h-screen bg-[#000] overflow-hidden scroll-mt-24 " id="skills">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px] " />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
-      
-      {/* Animated scanline */}
-      <motion.div 
-        className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent h-32 pointer-events-none"
-        animate={{ top: ['-10%', '110%'] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+      <div className="absolute inset-0">
+      <Particles />
+      </div>
+
+      <motion.div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"
+        animate={{ opacity: [0.3, 1, 0.3] }}
+        transition={{ duration: 3, repeat: Infinity }}
       />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">

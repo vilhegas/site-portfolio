@@ -16,7 +16,7 @@ export function Particles() {
     id: i,
     left: Math.random() * 100,
     delay: Math.random() * 5,
-    duration: 3 + Math.random() * 4,
+    duration: 9 + Math.random() * 9,
     height: 20 + Math.random() * 30
   }));
   

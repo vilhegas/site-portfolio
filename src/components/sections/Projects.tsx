@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Github, 
-  ExternalLink, 
-  Star, 
-  GitFork, 
-  Code, 
-  Terminal, 
-  Zap, 
+import {
+  Github,
+  ExternalLink,
+  Star,
+  GitFork,
+  Code,
+  Terminal,
+  Zap,
   Eye,
   Calendar,
   Folder,
@@ -43,6 +43,7 @@ const languageColors: Record<string, string> = {
 
 export default function Projects() {
   const [projects, setProjects] = useState<GitHubRepo[]>([]);
+  const [totalRepos, setTotalRepos] = useState<number | null>(null); // ✅ NOVO: total real de repos públicos
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedProject, setSelectedProject] = useState<GitHubRepo | null>(null);
@@ -51,24 +52,33 @@ export default function Projects() {
 
   useEffect(() => {
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(
-        `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=4&visibility=public`
-      );
-      
-      if (!response.ok) throw new Error('Falha ao carregar projetos');
-      
-      const data = await response.json();
-      // Filtra apenas repos com conteúdo (não vazios)
-      const validProjects = data
-        .filter((repo: GitHubRepo) => 
-            !repo.fork && repo.description && repo.name !== GITHUB_USERNAME
-        )
+      setLoading(true);
+      setError('');
+
+      // Busca em paralelo: repos (para cards) + user (para total público)
+      const [reposRes, userRes] = await Promise.all([
+        fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=50&type=owner`),
+        fetch(`https://api.github.com/users/${GITHUB_USERNAME}`)
+      ]);
+
+      if (!reposRes.ok || !userRes.ok) throw new Error('Falha ao carregar dados');
+
+      const data = await reposRes.json();
+      const user = await userRes.json();
+
+      // Total do GitHub
+      setTotalRepos(user?.public_repos ?? 0);
+
+      // Filtra apenas repos com conteúdo (não vazios) e pega 3 para exibir
+      const validProjects = (data as GitHubRepo[])
+        .filter((repo) => !repo.fork && repo.description && repo.name !== GITHUB_USERNAME)
         .slice(0, 3);
-      
+
       setProjects(validProjects);
     } catch (err) {
       setError('Erro na conexão com o servidor GitHub');
@@ -80,10 +90,10 @@ export default function Projects() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
     });
   };
 
@@ -95,18 +105,23 @@ export default function Projects() {
     <section className="relative bg-black overflow-hidden py-20 scroll-mt-24" id="projetos">
       {/* Background Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.02)_1px,transparent_1px)] bg-[size:30px_30px]" />
-      
-      <motion.div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"
+
+      {/* Animated scanline */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent h-32 pointer-events-none"
+        animate={{ top: ['-10%', '110%'] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+      />
+
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"
         animate={{ opacity: [0.3, 1, 0.3] }}
         transition={{ duration: 3, repeat: Infinity }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
-
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -135,16 +150,9 @@ export default function Projects() {
             <div className="flex items-center gap-4 p-3 bg-slate-900/50 border border-cyan-500/20 rounded-lg">
               <div className="text-right">
                 <div className="text-xs text-slate-500 font-mono">REPOSITÓRIOS</div>
-                <div className="text-lg font-bold text-cyan-400 font-mono">
-                  {loading ? '...' : projects.length.toString().padStart(2, '0')}
-                </div>
-              </div>
-              <div className="h-8 w-px bg-cyan-500/20" />
-              <div className="text-right">
-                <div className="text-xs text-slate-500 font-mono">STATUS</div>
-                <div className="text-xs font-bold text-emerald-400 font-mono flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
-                  ONLINE
+                <div className="text-lg font-bold text-cyan-400 font-mono text-center">
+                  {/*total */}
+                  {loading || totalRepos === null ? '...' : totalRepos.toString().padStart(2, '0') }
                 </div>
               </div>
             </div>
@@ -162,15 +170,11 @@ export default function Projects() {
 
         {/* Error State */}
         {error && !loading && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="p-8 bg-red-500/10 border border-red-500/30 rounded-lg text-center"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-8 bg-red-500/10 border border-red-500/30 rounded-lg text-center">
             <Terminal className="w-12 h-12 text-red-400 mx-auto mb-4" />
             <h3 className="text-red-400 font-mono font-bold mb-2">CONNECTION_FAILED</h3>
             <p className="text-slate-400 text-sm mb-4">{error}</p>
-            <button 
+            <button
               onClick={fetchProjects}
               className="px-4 py-2 bg-red-500/10 border border-red-400 text-red-400 hover:bg-red-400 hover:text-slate-950 transition-all font-mono text-sm"
             >
@@ -185,7 +189,7 @@ export default function Projects() {
             <AnimatePresence>
               {projects.map((project, index) => {
                 const langStyle = getLanguageStyle(project.language);
-                
+
                 return (
                   <motion.div
                     key={project.id}
@@ -199,7 +203,7 @@ export default function Projects() {
                   >
                     {/* Hover Glow */}
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
+
                     {/* Card Header */}
                     <div className="p-5 border-b border-cyan-500/10 relative">
                       <div className="flex items-start justify-between mb-3">
@@ -221,11 +225,11 @@ export default function Projects() {
                           )}
                         </div>
                       </div>
-                      
+
                       <h3 className="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors truncate">
                         {project.name}
                       </h3>
-                      
+
                       <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-500 font-mono">
                         <Calendar className="w-3 h-3" />
                         <span>UPDATED: {formatDate(project.updated_at)}</span>
@@ -246,7 +250,7 @@ export default function Projects() {
                           </span>
                         )}
                         {project.topics.slice(0, 2).map((topic) => (
-                          <span 
+                          <span
                             key={topic}
                             className="px-2 py-1 rounded text-xs font-mono border border-slate-600 text-slate-400 bg-slate-800/50"
                           >
@@ -267,7 +271,7 @@ export default function Projects() {
                           CLICK_TO_EXPAND
                         </span>
                         <div className="flex gap-2">
-                          <a 
+                          <a
                             href={project.html_url}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -277,7 +281,7 @@ export default function Projects() {
                             <Github className="w-4 h-4" />
                           </a>
                           {project.homepage && (
-                            <a 
+                            <a
                               href={project.homepage}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -334,7 +338,7 @@ export default function Projects() {
                         </span>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setSelectedProject(null)}
                       className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-all"
                     >
@@ -357,7 +361,7 @@ export default function Projects() {
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedProject.topics.map((topic) => (
-                          <span 
+                          <span
                             key={topic}
                             className="px-3 py-1 rounded-full text-xs font-mono border border-cyan-500/30 text-cyan-400 bg-cyan-400/5"
                           >
@@ -369,7 +373,7 @@ export default function Projects() {
                   )}
 
                   <div className="flex gap-4 pt-4">
-                    <a 
+                    <a
                       href={selectedProject.html_url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -379,7 +383,7 @@ export default function Projects() {
                       VIEW_SOURCE
                     </a>
                     {selectedProject.homepage && (
-                      <a 
+                      <a
                         href={selectedProject.homepage}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -398,11 +402,7 @@ export default function Projects() {
 
         {/* Refresh Button */}
         {!loading && !error && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-10 text-center"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-10 text-center">
             <button
               onClick={fetchProjects}
               className="px-6 py-3 bg-slate-900/50 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-400/10 hover:border-cyan-400 transition-all font-mono text-sm flex items-center gap-2 mx-auto rounded"

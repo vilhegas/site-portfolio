@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
-import { Mail, Code2 } from "lucide-react";
+import { Mail, Code2, Download } from "lucide-react";
 import { MouseProvider } from "@/components/3d/MouseContext";
 import SoullessModel from "@/components/3d/SoullessModel";
 import { Particles } from "@/components/ui/Particles";
@@ -61,14 +61,18 @@ export default function Hero({ scrollToSection }: HeroProps) {
       >
 
         {/* Background */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `
-      linear-gradient(to bottom, rgba(2,6,23,0.7), rgba(2,6,23,0.95)),
-      url('/space-bg.jpg')` }}
-        >
-          <Particles />
-        </div>
+          <div className="absolute inset-0 bg-[#000]">
+            {/* Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+
+            {/* Vinheta / escurecimento nas bordas */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.85)_100%)]" />
+
+            {/* Partículas por cima */}
+            <div className="absolute inset-0">
+              <Particles />
+            </div>
+          </div>
 
 
         {/* 3D Model (desktop only) */}
@@ -131,7 +135,7 @@ export default function Hero({ scrollToSection }: HeroProps) {
 
                 <button
                   onClick={() => scrollToSection("contato")}
-                  className="px-6 py-3 md:px-8 md:py-4 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-full transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-sm md:text-base"
+                  className="px-6 py-3 md:px-8 md:py-4 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-full transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-sm md:text-base whitespace-nowrap"
                 >
                   <Mail className="w-4 h-4 md:w-5 md:h-5" />
                   Entre em Contato
@@ -140,11 +144,20 @@ export default function Hero({ scrollToSection }: HeroProps) {
 
                 <button
                   onClick={() => scrollToSection("projetos")}
-                  className="px-6 py-3 md:px-8 md:py-4 border-2 border-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 font-bold rounded-full transition-all flex items-center justify-center gap-2 text-sm md:text-base"
+                  className="px-6 py-3 md:px-8 md:py-4 border-2 border-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 font-bold rounded-full transition-all flex items-center justify-center gap-2 text-sm md:text-base whitespace-nowrap"
                 >
                   <Code2 className="w-4 h-4 md:w-5 md:h-5" />
                   Ver Projetos
                 </button>
+                  <a
+                    href="/CV-Caique-Vilhegas.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-3 md:px-7 md:py-4 border-2 border-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 font-bold rounded-full transition-all flex items-center justify-center gap-2 text-sm md:text-base whitespace-nowrap"
+                  >
+                    <Download className="w-4 h-4 md:w-6 md:h-5 "  />
+                    Baixar CV
+                  </a>
 
               </motion.div>
 
@@ -157,23 +170,6 @@ export default function Hero({ scrollToSection }: HeroProps) {
           </div>
 
         </div>
-
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-10"
-        >
-
-          <div className="w-6 h-10 border-2 border-slate-600 rounded-full flex justify-center pt-2">
-
-            <div className="w-1.5 h-3 bg-cyan-400 rounded-full" />
-
-          </div>
-
-        </motion.div>
 
       </section>
 
